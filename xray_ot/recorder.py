@@ -204,7 +204,6 @@ class Recorder(SpanRecorder):
             return False
 
         report_request = self._construct_report_request()
-        print(report_request)
         try:
             self._finest("Attempting to send report to collector: %s", (report_request,))
             resp = connection.report(report_request)
@@ -215,7 +214,7 @@ class Recorder(SpanRecorder):
         except Exception as e:
             self._fine(
                     "Caught exception during report: %s, stack trace: %s",
-                    (e, traceback.format_exc(e)))
+                    (e, traceback.format_exc()))
             self._restore_spans(report_request)
             return False
 
