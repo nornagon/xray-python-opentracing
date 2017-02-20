@@ -65,7 +65,7 @@ class _XRayTracer(BasicTracer):
         if enable_binary_format:
             # We do this import lazily because protobuf versioning issues
             # can cause process-level failure at import time.
-            from basictracer.binary_propagator import BinaryPropagator
+            from .binary_propagator import BinaryPropagator
             self.register_propagator(Format.BINARY, BinaryPropagator())
 
     def flush(self):
