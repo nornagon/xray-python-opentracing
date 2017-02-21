@@ -35,7 +35,8 @@ def add_spans():
             child_span.set_tag('span_type', 'child')
             # Pretend there was an error
             child_span.set_tag('error', True)
-            child_span.log_event('Uh Oh!', payload={'stacktrace': traceback.extract_stack()})
+            child_span.log_event('Uh Oh!', payload={'stacktrace': [tuple(f) for
+                f in traceback.extract_stack()]})
             sleep_dot()
 
             # Play with the propagation APIs... this is not IPC and thus not

@@ -17,6 +17,7 @@ from opentracing import Format
 
 from .recorder import Recorder
 from .text_propagator import TextPropagator
+from .binary_propagator import BinaryPropagator
 
 
 def Tracer(**kwargs):
@@ -28,8 +29,6 @@ def Tracer(**kwargs):
         process.
     :param str collector_host: X-Ray daemon hostname
     :param int collector_port: X-Ray daemon port
-    :param str collector_encryption: one of 'tls' or 'none'. If nothing is
-        specified, the default is 'tls'.
     :param dict tags: a string->string dict of tags for the Tracer itself (as
         opposed to the Spans it records)
     :param int max_span_records: Maximum number of spans records to buffer
@@ -39,34 +38,17 @@ def Tracer(**kwargs):
         0 (default): log nothing
         1: log transient problems
         2: log all of the above, along with payloads sent over the wire
-    :param bool certificate_verification: if False, will ignore SSL
-        certification verification (in ALL HTTPS calls, not just in this
-        library) for the lifetime of this process; intended for debugging
-        purposes only. (Included to work around SNI non-conformance issues
-        present in some versions of python)
-    :param bool disable_binary_format: Whether to disable the binary
-        inject/extract format (which relies on protobufs and may cause problems
-        if other versions of protobufs are active in the same packaging
-        configuration). Defaults to False (i.e., binary format is enabled).
     """
-    enable_binary_format = True
-    if 'disable_binary_format' in kwargs:
-        enable_binary_format = not kwargs['disable_binary_format']
-        del kwargs['disable_binary_format']
-    return _XRayTracer(enable_binary_format, Recorder(**kwargs))
+    return _XRayTracer(Recorder(**kwargs))
 
 
 class _XRayTracer(BasicTracer):
-    def __init__(self, enable_binary_format, recorder):
+    def __init__(self, recorder):
         """Initialize the X-Ray Tracer, deferring to BasicTracer."""
         super(_XRayTracer, self).__init__(recorder)
         self.register_propagator(Format.TEXT_MAP, TextPropagator())
         self.register_propagator(Format.HTTP_HEADERS, TextPropagator())
-        if enable_binary_format:
-            # We do this import lazily because protobuf versioning issues
-            # can cause process-level failure at import time.
-            from .binary_propagator import BinaryPropagator
-            self.register_propagator(Format.BINARY, BinaryPropagator())
+        self.register_propagator(Format.BINARY, BinaryPropagator())
 
     def flush(self):
         """Force a flush of buffered Span data to the X-Ray daemon."""

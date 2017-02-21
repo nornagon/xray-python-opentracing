@@ -71,7 +71,6 @@ class Recorder(SpanRecorder):
         """
         if (self._periodic_flush_seconds > 0) and (self._flush_thread is None):
             self._flush_connection = conn._Connection(self._collector_url)
-            self._flush_connection.open()
             self._flush_thread = threading.Thread(target=self._flush_periodically,
                                                   name=constants.FLUSH_THREAD_NAME)
             self._flush_thread.daemon = True
@@ -168,9 +167,6 @@ class Recorder(SpanRecorder):
         if flush:
             flushed = self.flush()
 
-        if self._flush_connection:
-            self._flush_connection.close()
-
         self._disabled_runtime = True
 
         return flushed
@@ -180,11 +176,6 @@ class Recorder(SpanRecorder):
 
         Runs in a dedicated daemon thread (self._flush_thread).
         """
-        # Open the connection
-        while not self._disabled_runtime and not self._flush_connection.ready:
-            time.sleep(self._periodic_flush_seconds)
-            self._flush_connection.open()
-
         # Send data until we get disabled
         while not self._disabled_runtime:
             self._flush_worker(self._flush_connection)
@@ -196,18 +187,10 @@ class Recorder(SpanRecorder):
         if connection == None:
             return False
 
-        # If the connection is not ready, try reestablishing it. If that
-        # fails just wait until the next flush attempt to try again.
-        if not connection.ready:
-            connection.open()
-        if not connection.ready:
-            return False
-
         report_request = self._construct_report_request()
         try:
-            self._finest("Attempting to send report to collector: %s", (report_request,))
-            resp = connection.report(report_request)
-            self._finest("Received response from collector: %s", (resp,))
+            self._finest("Sending report to daemon: %s", (report_request,))
+            connection.report(report_request)
 
             return True
 
