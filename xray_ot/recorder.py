@@ -117,6 +117,9 @@ class Recorder(SpanRecorder):
             segment['parent_id'] = span.parent_id
             segment['type'] = 'subsegment'
         if span.tags:
+            if 'http' in span.tags:
+                segment['http'] = span.tags['http']
+                del span.tags['http']
             segment['annotations'] = span.tags
 
         if len(span.logs) > 0:
