@@ -4,12 +4,15 @@
 
 Python [OpenTracing](http://opentracing.io/) implementation for [AWS X-Ray](http://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html), a distributed tracing system.
 
-WIP. Heavily based on the excellent [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-python).
+WIP (but it works for [us](http://lexy.io)). Heavily based on the excellent [LightStep Tracer](https://github.com/lightstep/lightstep-tracer-python).
 
 ## Installation
 
-```bash
-pip install lightstep
+xray-python-opentracing is not yet on PyPI, but you can add the following line
+to your requirements.txt:
+
+```
+git+git://github.com/nornagon/xray-python-opentracing.git@9a40fbc
 ```
 
 ## Getting started
